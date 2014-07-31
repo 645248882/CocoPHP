@@ -7,10 +7,18 @@ function pr( $arr)
     print_r($arr);
 }
 
-
-function template($tpl)
+/**
+ * 抛异常
+ *
+ * @param string $msg
+ * @param string $class
+ * @throws Core_Exception_Abstract
+ * @return void
+ */
+function throws($msg, $sign = 0000)
 {
-    return rtrim(Core_View::getInstance()->getScriptPath(), DS) . DS . $tpl . TPL_EXT;
+    $msg = $msg .'__' . $sign;
+    throw new Exception($msg);
 }
 
 /**
@@ -33,4 +41,39 @@ function ximplode($array)
 function xexplode($string)
 {
     return $string ? explode(',', $string) : array();
+}
+
+/**
+ * 单例加载
+ *
+ * @param string $className
+ * @return object
+ */
+function S($className)
+{
+    return Core_Loader::getSingleton($className);
+}
+
+/**
+ * 加载 Dao
+ *
+ * @param string $name
+ * @return object
+ */
+function Dao($name)
+{
+    return S('Dao_' . $name);
+}
+
+/**
+ * 是否调试模式
+ *
+ * @return bool
+ */
+function isDebug()
+{
+    if (defined('DEBUG_MODE') && DEBUG_MODE) {
+        return true;
+    }
+    return false;
 }

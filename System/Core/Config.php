@@ -12,9 +12,4 @@ class Core_Config {
 
         return self::$data[$fileName];
     }
-
-    public static function loadEnv($dir)
-    {
-
-    }
 }

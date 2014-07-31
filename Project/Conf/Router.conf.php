@@ -1,8 +1,8 @@
 <?php
-// 缺省路由（即首页URI）
+// 缺省路由
 $routes['DefaultDispatchInfo'] = array(
     'controller' => 'Index',
-    'action'     => 'Index',
+    'action'     => 'index',
     'params'     => array(),
 );
 

@@ -20,17 +20,17 @@ return array(
  */
 return array(
     'default' => array(
-        'host'       => '192.168.220.128',
+        'host'       => '192.168.253.129',
         'port'       => '6379',
         'database'   => '0',
     ),
     'static' => array(
-        'host'       => '192.168.220.128',
+        'host'       => '192.168.253.129',
         'port'       => '6379',
         'database'   => '1',
     ),
     'queue' => array(
-        'host'       => '127.0.0.1',
+        'host'       => '192.168.253.129',
         'port'       => '6379',
         'database'   => '2',
     ),

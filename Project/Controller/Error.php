@@ -4,7 +4,7 @@
  * 错误异常处理器
  */
 
-class Controller_Error extends Core_Controller_Abstract
+class Controller_Error extends Core_Controller_Web
 {
     public function errorAction()
     {
@@ -18,11 +18,12 @@ class Controller_Error extends Core_Controller_Abstract
             // 把异常重新抛出，捕获异常的类型
             throw $e;
         } catch (Exception $e) {
+            $data = array();
+            $msg = explode('__', $e->getMessage());
+            $data[$msg[1]] = $msg[0];
 
-            echo '<pre>', $e->getMessage(), '</pre>';
-            exit();
+            pr($data);
+            //$this->json($data);
         }
-
-        return false;
     }
 }

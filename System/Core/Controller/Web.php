@@ -1,5 +1,5 @@
 <?php
-abstract class Core_Controller_Abstract
+abstract class Core_Controller_Web
 {
     /**
      * 自动加载视图

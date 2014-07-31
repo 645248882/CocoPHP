@@ -23,6 +23,7 @@ class Core_App {
         set_include_path(
             '.' .
             PATH_SEPARATOR . APP_PATH .
+            PATH_SEPARATOR . APP_PATH . DS . 'Library'.
             PATH_SEPARATOR . SYS_PATH
         );
 
@@ -50,7 +51,7 @@ class Core_App {
 
         // 包含文件之后，在检测类是否存在
         if (! class_exists($className, false) && ! interface_exists($className, false)) {
-            throw new Core_Exception_Fatal('Unable to load class: ' . $className);
+            throw new Exception('Unable to load class: ' . $className);
         }
     }
 
@@ -63,7 +64,6 @@ class Core_App {
             if (! $this->_dispatchInfo) {
                 throw new Exception('No dispatchInfo found');
             }
-
             do {
                 $this->_dispatched  = true;
                 // 执行分发
@@ -79,7 +79,7 @@ class Core_App {
             }
             // 错误、异常处理控制器
             $dispatchInfo = array(
-                'controller' => 'error',
+                'controller' => 'Error',
                 'action'     => 'error',
 
                 // 把异常传递到异常控制器中
@@ -148,26 +148,5 @@ class Core_App {
         }
 
         $result = call_user_func(array($controllerObj, $actionMethod));
-
-        // 视图自动渲染
-        if (isset($controllerObj->autoRender) && $controllerObj->autoRender) {
-            // 如果没有返回值，或者返回值为true 则自动渲染视图
-            // 如果返回为false，则不渲染视图
-            if (null === $result || $result !== false) {
-                // 获取模板文件名,默认文件目录为controller,默认文件为action
-                $tpl = $controllerObj->getTpl() ?: strtolower($controller) . DS . strtolower($action);
-
-                // 获取模板文件名路径
-                $tplFilePath = template($tpl);
-
-                // 检测模板文件是否存在
-                if (! is_file($tplFilePath)) {
-                    throw new Exception('Unable to find template - ' . $tplFilePath);
-                }
-
-                // 自动渲染
-                Core_View::getInstance()->display($tpl);
-            }
-        }
     }
 }

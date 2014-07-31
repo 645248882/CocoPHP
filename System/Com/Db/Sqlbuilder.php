@@ -1,12 +1,10 @@
 <?php
-/**
- * sql builder
- */
-class Com_Db_Sqlbuilder
+
+class Com_DB_SqlBuilder
 {
     private static $_sqlTpl = array(
         'select'       => 'SELECT {DISTINCT} {FIELD} FROM {TABLE} {JOIN} {WHERE} {GROUP} {HAVING} {ORDER} {LIMIT} {LOCK}',
-        'insert'       => 'INSERT INTO {TABLE} ({KEYSQL}) VALUES ({VALUESQL})',
+        'insert'       => 'INSERT {IGNORE} INTO {TABLE} ({KEYSQL}) VALUES ({VALUESQL})',
         'replace'      => 'REPLACE INTO {TABLE} ({KEYSQL}) VALUES ({VALUESQL})',
         'update'       => 'UPDATE {TABLE} SET {SETSQL} {WHERE} {ORDER} {LIMIT}',
         'delete'       => 'DELETE FROM {TABLE} {WHERE} {ORDER} {LIMIT}',
@@ -53,11 +51,12 @@ class Com_Db_Sqlbuilder
      *
      * @param array $setArr
      * @param bool $isReplace
+     * @param bool $isIgnoreDup 忽略重复
      * @return int
      */
-    public function buildInsertSql(array $setArr, $isReplace = false)
+    public function buildInsertSql(array $setArr, $isReplace = false, $isIgnoreDup = false)
     {
-        $sql = $this->_buildInsertSql($setArr, $isReplace);
+        $sql = $this->_buildInsertSql($setArr, $isReplace, $isIgnoreDup);
 
         return array(
             'sql'    => $sql,
@@ -65,7 +64,7 @@ class Com_Db_Sqlbuilder
         );
     }
 
-    public function _buildInsertSql(array &$setArr, $isReplace = false)
+    public function _buildInsertSql(array &$setArr, $isReplace = false, $isIgnoreDup = false)
     {
         $insertkeysql = $insertvaluesql = $comma = '';
         foreach ($setArr as $key => $value) {
@@ -79,9 +78,10 @@ class Com_Db_Sqlbuilder
         }
 
         $sql = str_replace(
-            array('{TABLE}', '{KEYSQL}', '{VALUESQL}'),
+            array('{TABLE}', '{IGNORE}', '{KEYSQL}', '{VALUESQL}'),
             array(
                 $this->_parseTable($this->_options['table']),
+                $isIgnoreDup ? 'IGNORE' : '',
                 $insertkeysql,
                 $insertvaluesql,
             ),
@@ -340,12 +340,11 @@ class Com_Db_Sqlbuilder
 
         if ($whereArr && is_array($whereArr)) {
 
-            pr($whereArr);
-
             foreach ($whereArr as $field => $value) {
 
+                $operator = '=';
                 if (is_array($value)) {
-                    $operator = strtoupper($value[0]);
+                    $operator = $value[0];
                     $value    = $value[1];
                 }
 
@@ -361,6 +360,9 @@ class Com_Db_Sqlbuilder
                         case 'IN':
                         case 'NOT IN':
                             $whereSql .= ' (' . (is_array($value) ? ximplode($value) : $value) . ')';
+                            break;
+                        case 'BETWEEN':
+                            $whereSql .= ' ' . $value[0] . ' AND ' . $value[1];
                             break;
                         default:
                             $whereSql .= ' \'' . $value . '\'';

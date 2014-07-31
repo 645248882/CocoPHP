@@ -20,7 +20,7 @@ class Com_Dao
     /**
      * Db连接实例
      */
-    protected $_db;
+    protected $_dbs = array();
 
     /**
      * sql拼接容器
@@ -28,70 +28,89 @@ class Com_Dao
     protected $_options  = array();
 
     /**
-     * 连接主数据库
-     */
-    protected $_isMater = false;
-
-    /**
-     * 是否开启缓存
-     */
-    protected $_enCached = false;
+     * 插入sql占位符
+     */ 
+    protected $_params   = array();
 
     /**
      * sql拼接对象
      */
     protected $_sqlBuilder;
 
+    /**
+     * 主键
+     *
+     * @var string
+     */
+    protected $_pk = 'id';
+
+    /**
+     * 可选属性，用于 pairs()
+     *
+     * @var string
+     */
+    protected $_nameField = 'name';
+
     public function test()
     {
-        pr($this->_options );
+        pr($this->_options);
     }
 
     protected function db()
     {
-        if (null == $this->_db) {
+        if (! isset($this->_dbs[$this->_dbName])) {
             if (! $this->_dbName) {
                 throw new Exception(get_class($this) . ' 没有定义 $_dbName，无法使用 Com_Dao');
             }
 
-            $this->_db = new com_db($this->_dbName);
+            $this->_dbs[$this->_dbName] = Com_Db::get($this->_dbName);
         }
+
+         return $this->_dbs[$this->_dbName];
+    }
+    /**
+     * 设置当前库名
+     *
+     * @return $this
+     */
+    public function setDbName($dbName)
+    {
+        $this->_dbName = $dbName;
 
         return $this;
     }
 
-    public function getDb()
+    /**
+     * 设置当前表名
+     *
+     * @return $this
+     */
+    public function setTableName($tableName)
     {
+        $this->_tableName = $tableName;
 
-    }
-
-    public function setDb($dbName)
-    {
-
+        return $this;
     }
 
     public function getTableName()
     {
-        if (isset($this->_options ['tableName'])) {
-            return $this->_options ['tableName'];
+        if (isset($this->_options['table'])) {
+            return $this->_options['table'];
         }
 
-        if (null == $this->_tableName) {
-            //todo 默认tableName获取方式
+        // 缺省根据类名获取表名
+        // 例如：Dao_User_Index => user_index
+        if (null === $this->_tableName) {
+            $this->_tableName = strtolower(str_replace('Dao_', '', get_called_class()));
         }
 
         return $this->_tableName;
     }
 
-    public function setTableName($tableName)
-    {
-        $this->_tableName = $tableName;
-    }
-
-    public function getSqlBuilder()
+    public function getBuilder()
     {
         if ($this->_sqlBuilder === null) {
-            $this->_sqlBuilder = new Com_DB_SqlBuilder();
+            $this->_sqlBuilder = new Com_Db_SqlBuilder();
         }
 
         return $this->_sqlBuilder;
@@ -126,31 +145,68 @@ class Com_Dao
             'decrement' => 1,
         );
 
-        if (isset($writeMethods[$method])) {
-            // 进行写数据库操作
-        }
-
         // 读操作
         $readMethods = array(
-            'fetchAll' => 1,
-            'fetchOne' => 1,
-            'fetchCol' => 1,
-            'fetchRow' => 1,
+            'fetchAll'   => 1,
+            'fetchAssoc' => 1,
+            'fetchOne'   => 1,
+            'fetchRow'   => 1,
+            'fetchCol'   => 1,
+            'fetchPairs' => 1,
         );
 
         if (isset($readMethods[$method])) {
             return $this->_read($method);
         }
+
+        // 执行写操作
+        if (isset($writeMethods[$method])) {
+
+            if ($method == 'delete' && $args) {
+                throws('Com_Dao::delete() 的条件参数必须使用 where() 等方法来设置', 0000);
+            } elseif ($method == 'update' && count($args) > 1) {
+                throws('Com_Dao::update() 的条件参数必须使用 where() 等方法来设置', 0000);
+            }
+
+            return $this->_write($method, $args);
+        }
+
+
+        throws('Call to undefined method Com_Dao::' . $method, 0000);
     }
 
-    protected function _write()
+    protected function _write($method, $args = null)
     {
+        $sqlBuilder = $this->table($this->getTableName())
+                           ->getBuilder()->setOptions($this->_options);
 
+        $buildMethod = 'build' . ucfirst($method) .'Sql';
+        $sql = call_user_func_array(array($sqlBuilder, $buildMethod), $args);
+
+        if (is_array($sql)) {
+            $this->_params = array_merge($sql['params'], $this->_params);
+            $sql = $sql['sql'];
+        }
+
+        $result = $this->db()->query($sql, $this->_params, true);
+
+        // 重置存储的选项
+        $this->reset();
+
+        return $result;
     }
 
-    protected function _read($method)
+    protected function _read($fetchMethod)
     {
-        $sql = $this->table($this->getTableName())->getSqlBuilder()->setOptions($this->_options)->buildSelectSql();
+        $sql = $this->table($this->getTableName())
+                    ->getBuilder()->setOptions($this->_options)->buildSelectSql();
+
+        $result = $this->db()->$fetchMethod($sql, $this->_params);
+
+        // 重置存储的选项
+        $this->reset();
+
+        return $result;
     }
 
     public function reset()
@@ -158,20 +214,128 @@ class Com_Dao
         $this->_options     = array();
         $this->_params      = array();
         $this->_isMaster    = false;
-        $this->_enableCache = false;
 
         return $this;
+    }
+
+    protected function _getPkCondition($pk)
+    {
+        // 复合主键
+        if (is_array($this->_pk)) {
+            return array_combine($this->_pk, $pk);
+        }
+        // 单一主键
+        else {
+            return array($this->_pk => $pk);
+        }
     }
 
     /**
      * 根据主键 fetchRow + Cache
      *
      * @param mixed $pk
-     * @param bool $cached 是否读取缓存
      * @return array
      */
-    public function get($pk, $cached = true)
+    public function get($pk)
     {
-        //return $this->where(array($this->_pk => $pk))->cache($cached)->fetchRow();
+        return $this->where(array($this->_pk => $pk))->fetchRow();
     }
+
+ /**
+     * 更新（根据主键）
+     *
+     * @param array $setArr
+     * @param mixed $pk
+     * @param array $extraWhere 格外的WHERE条件
+     * @return bool/int
+     */
+    public function updateByPk(array $setArr, $pk, array $extraWhere = array())
+    {
+        if (! $setArr) {
+            return false;
+        }
+
+        $where = $this->_getPkCondition($pk);
+
+        if ($extraWhere) {
+            $where = array_merge($where, $extraWhere);
+        }
+
+        if (! $result = $this->where($where)->update($setArr)) {
+            return $result;
+        }
+
+        return $result;
+    }
+
+    /**
+     * 批量更新（根据主键）
+     * 注：本方法不支持复合主键
+     *
+     * @param array $setArr
+     * @param array $pks
+     * @param array $extraWhere 格外的WHERE条件
+     * @return bool/int
+     */
+    public function updateByPks(array $setArr, array $pks, array $extraWhere = array())
+    {
+        $where = array($this->_pk => array('IN', $pks));
+
+        if ($extraWhere) {
+            $where = array_merge($where, $extraWhere);
+        }
+
+        if (! $result = $this->where($where)->update($setArr)) {
+            return $result;
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * 删除（根据主键）
+     *
+     * @param mixed $pk
+     * @param array $extraWhere 格外的WHERE条件
+     * @return bool
+     */
+    public function deleteByPk($pk, array $extraWhere = array())
+    {
+        $where = $this->_getPkCondition($pk);
+
+        if ($extraWhere) {
+            $where = array_merge($where, $extraWhere);
+        }
+
+        if (! $result = $this->where($where)->delete()) {
+            return $result;
+        }
+
+        return $result;
+    }
+
+    /**
+     * 批量删除（根据主键）
+     * 注：本方法不支持复合主键
+     *
+     * @param array $pks
+     * @param array $extraWhere 格外的WHERE条件
+     * @return bool
+     */
+    public function deleteByPks(array $pks, array $extraWhere = array())
+    {
+        $where = array($this->_pk => array('IN', $pks));
+
+        if ($extraWhere) {
+            $where = array_merge($where, $extraWhere);
+        }
+
+        if (! $result = $this->where($where)->delete()) {
+            return $result;
+        }
+
+        return $result;
+    }
+
 }

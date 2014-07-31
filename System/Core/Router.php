@@ -9,6 +9,7 @@ class Core_Router {
     public static function getPathInfo()
     {
         $pathInfo = isset($_SERVER["PATH_INFO"]) ? $_SERVER["PATH_INFO"] : '';
+
         // 当 Nginx 没有配置 PATH_INFO 时的兼容读取（注意修改 rewrite 规则）
         if (! $pathInfo) {
             $pathInfo = isset($_GET['PATH_INFO']) ? $_GET['PATH_INFO'] : '';
@@ -41,7 +42,7 @@ class Core_Router {
         $controller = ($controller) ? ucfirst($controller) : $routerConfig["DefaultDispatchInfo"]["controller"];
 
         $action = array_shift($pathInfos);
-        $action = ($action) ? ucfirst($action) : $routerConfig["DefaultDispatchInfo"]["action"];
+        $action = ($action) ? $action : $routerConfig["DefaultDispatchInfo"]["action"];
 
         // 解析GET参数，例如:
         // _directory/controller/action/k1/v1/k2/v2
