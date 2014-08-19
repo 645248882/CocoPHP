@@ -6,7 +6,7 @@
  * @author JiangJian <silverd@sohu.com>
  */
 
-class Com_db_Pdo
+class Com_Db_Pdo
 {
     /**
      * 存放数据库的连接
