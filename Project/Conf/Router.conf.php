@@ -1,7 +1,7 @@
 <?php
 // 缺省路由
 $routes['DefaultDispatchInfo'] = array(
-    'controller' => 'Index',
+    'controller' => 'index',
     'action'     => 'index',
     'params'     => array(),
 );

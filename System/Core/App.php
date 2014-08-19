@@ -64,9 +64,12 @@ class Core_App {
             if (! $this->_dispatchInfo) {
                 throw new Exception('No dispatchInfo found');
             }
+
             do {
                 $this->_dispatched  = true;
-                // 执行分发
+
+                // 执行分发，调用控制器里面的方法，如果这个方法设置了$this->_dispatched为false，将继续分发
+                // 这就是forward函数的实现机制
                 $this->dispatch();
 
             } while (! $this->_dispatched);
@@ -148,5 +151,19 @@ class Core_App {
         }
 
         $result = call_user_func(array($controllerObj, $actionMethod));
+
+        if (isset($controllerObj->autoRender) && $controllerObj->autoRender) {
+            if (null === $result || $result !== false) {
+                $tpl = $controllerObj->getTpl() ?: strtolower($controller) . DS . strtolower($action);
+
+                $tplFilePath = template($tpl);
+
+                if (! is_file($tplFilePath)) {
+                    throw new Exception('Unable to find template - ' . $tplFilePath);
+                }
+
+               Core_View::getInstance()->display($tpl);
+            }
+        }
     }
 }

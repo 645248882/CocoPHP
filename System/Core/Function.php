@@ -77,3 +77,4 @@ function isDebug()
     }
     return false;
 }
+

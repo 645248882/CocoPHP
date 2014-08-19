@@ -87,4 +87,14 @@ abstract class Core_Controller_Abstract
         exit(json_encode($output));
     }
 
+
+    public function forward($controller, $action = 'index', $params = array())
+    {
+        $dispatchInfo = array(
+            'controller' => $controller,
+            'action'     => $action,
+            'params'     => $params,
+        );
+        Core_App::getInstance()->setDispatchInfo($dispatchInfo)->setDispatched(false);
+    }
 }

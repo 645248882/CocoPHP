@@ -31,7 +31,6 @@ class Core_Router {
             $pathInfo = self::getPathInfo();
         }
 
-
         $pathInfos = ($pathInfo) ? explode('/', trim($pathInfo, '/')) : array();
 
         if (! $pathInfos) {
