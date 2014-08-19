@@ -2,10 +2,6 @@
 
 /**
  * 响应类
- *
- * @author Jarhom <jarhom@gmail.com>
- * @modifier JianJian <silverd@sohu.com>
- * $Id: Http.php 43 2012-10-17 01:08:03Z jiangjian $
  */
 
 class Core_Response
