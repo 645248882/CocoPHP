@@ -13,11 +13,6 @@ class Model_User extends Core_Model_Abstract
     {
         $this->_prop = self::getUser($uid);
         $this->_uid  = $this->_prop['id'] = $this->_prop['uid'];
-
-        if ($extendInit) {
-            // 精力等自动恢复
-            // $this->restore->regular();
-        }
     }
 
     // 初始化用户数据
@@ -33,8 +28,8 @@ class Model_User extends Core_Model_Abstract
             $setArr = array(
     			'uid'                 => $uid,
                 'user_name'           => 'user_0000' . $uid,
-    			'energy'              => INIT_ENERGY,
-    			'diamond'             => INIT_DIAMOND,
+    			'energy'              => 1,
+    			'diamond'             => 1,
     			'create_time'         => $GLOBALS['_DATE'],
     			'energy_in_next_time' => 0,
             );
@@ -52,8 +47,6 @@ class Model_User extends Core_Model_Abstract
         // 我的扩展行为
         static $_traits = array(
             'base'      => 1,
-            'dailyTask' => 1,
-            'userMail'  => 1,
         );
 
         if (isset($_traits[$var])) {

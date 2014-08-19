@@ -12,6 +12,7 @@ class Core_Loader
      * @return object
      */
     private static $_loadedClass = array();
+    
     public static function getSingleton($className)
     {
         if (! isset(self::$_loadedClass[$className])) {

@@ -15,10 +15,10 @@ function pr( $arr)
  * @throws Core_Exception_Abstract
  * @return void
  */
-function throws($msg, $sign = 0000)
+function throws($msg, $class = 'Logic')
 {
-    $msg = $msg .'__' . $sign;
-    throw new Exception($msg);
+    $class = 'Core_Exception_' . ucfirst($class);
+    throw new $class($msg);
 }
 
 /**

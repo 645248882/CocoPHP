@@ -28,13 +28,13 @@ class Com_Db {
         $dbConf = Core_Config::load('Db');
 
         if (! $dbConf || ! is_array($dbConf)) {
-            throw new Exception("Empty DB CONFIG  please check db.conf.php file");
+            throws("Empty DB CONFIG  please check db.conf.php file", 'sql');
         }
 
         $dbServer = $dbConf[$dbName];
 
         if (! $dbServer) {
-            throw new Exception('Invalid DB configuration [' . $dbName . '], plz check: db.conf.php');
+            throws('Invalid DB configuration [' . $dbName . '], plz check: db.conf.php', 'sql');
         }
 
         if (! isset(self::$_dbs[$dbName])) {

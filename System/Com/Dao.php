@@ -51,16 +51,11 @@ class Com_Dao
      */
     protected $_nameField = 'name';
 
-    public function test()
-    {
-        pr($this->_options);
-    }
-
     protected function db()
     {
         if (! isset($this->_dbs[$this->_dbName])) {
             if (! $this->_dbName) {
-                throw new Exception(get_class($this) . ' 没有定义 $_dbName，无法使用 Com_Dao');
+                throws(get_class($this) . ' 没有定义数据库，无法使用 Com_Dao', 'sql');
             }
 
             $this->_dbs[$this->_dbName] = Com_Db::get($this->_dbName);
@@ -68,6 +63,7 @@ class Com_Dao
 
          return $this->_dbs[$this->_dbName];
     }
+
     /**
      * 设置当前库名
      *
@@ -163,22 +159,23 @@ class Com_Dao
         if (isset($writeMethods[$method])) {
 
             if ($method == 'delete' && $args) {
-                throws('Com_Dao::delete() 的条件参数必须使用 where() 等方法来设置', 0000);
+                throws('Com_Dao::delete() 的条件参数必须使用 where() 等方法来设置', 'sql');
             } elseif ($method == 'update' && count($args) > 1) {
-                throws('Com_Dao::update() 的条件参数必须使用 where() 等方法来设置', 0000);
+                throws('Com_Dao::update() 的条件参数必须使用 where() 等方法来设置', 'sql');
             }
 
             return $this->_write($method, $args);
         }
 
 
-        throws('Call to undefined method Com_Dao::' . $method, 0000);
+        throws('Call to undefined method Com_Dao::' . $method, 'sql');
     }
 
     protected function _write($method, $args = null)
     {
         $sqlBuilder = $this->table($this->getTableName())
-                           ->getBuilder()->setOptions($this->_options);
+                           ->getBuilder()
+                           ->setOptions($this->_options);
 
         $buildMethod = 'build' . ucfirst($method) .'Sql';
         $sql = call_user_func_array(array($sqlBuilder, $buildMethod), $args);
@@ -199,7 +196,9 @@ class Com_Dao
     protected function _read($fetchMethod)
     {
         $sql = $this->table($this->getTableName())
-                    ->getBuilder()->setOptions($this->_options)->buildSelectSql();
+                    ->getBuilder()
+                    ->setOptions($this->_options)
+                    ->buildSelectSql();
 
         $result = $this->db()->$fetchMethod($sql, $this->_params);
 
@@ -241,7 +240,7 @@ class Com_Dao
         return $this->where(array($this->_pk => $pk))->fetchRow();
     }
 
- /**
+   /**
      * 更新（根据主键）
      *
      * @param array $setArr
@@ -337,5 +336,4 @@ class Com_Dao
 
         return $result;
     }
-
 }

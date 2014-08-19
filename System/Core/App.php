@@ -2,6 +2,9 @@
 class Core_App {
     protected static $_instance;
 
+    /**
+     * 命令命令
+     */ 
     protected $_isCli = false;
 
     /**
@@ -51,7 +54,7 @@ class Core_App {
 
         // 包含文件之后，在检测类是否存在
         if (! class_exists($className, false) && ! interface_exists($className, false)) {
-            throw new Exception('Unable to load class: ' . $className);
+            throw new Core_Exception_Fatal('Unable to load class: ' . $className);
         }
     }
 
@@ -62,7 +65,7 @@ class Core_App {
             $this->setDispatchInfo();
 
             if (! $this->_dispatchInfo) {
-                throw new Exception('No dispatchInfo found');
+                throw new Core_Exception_Fatal('No dispatchInfo found');
             }
 
             do {
@@ -82,7 +85,7 @@ class Core_App {
             }
             // 错误、异常处理控制器
             $dispatchInfo = array(
-                'controller' => 'Error',
+                'controller' => 'Core_Exception_Error',
                 'action'     => 'error',
 
                 // 把异常传递到异常控制器中
@@ -127,18 +130,25 @@ class Core_App {
             Core_Request::getInstance()->setParams($params);
         }
 
-        $className = "Controller" . "_" . $controller;
-
-        $classPath = APP_PATH . DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
-
-        if (! file_exists($classPath)) {
-            throw new Exception('Unable to find controller - ' . $classPath);
+        // 如果抛出异常，则由异常处理器处理
+        if ($controller == 'Core_Exception_Error') {
+            $className = $controller;
+            $classPath = SYS_PATH . DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $controller) . '.php';
+        } else {
+            $className = "Controller" . "_" . ucfirst($controller);
+            $classPath = APP_PATH . DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
         }
 
+        // 先检测文件是否查找
+        if (! file_exists($classPath)) {
+            throw new Core_Exception_Fatal('Unable To find file - ' . $classPath);
+        }
+
+        // 然后再包含文件
         require $classPath;
 
         if (! class_exists($className)) {
-            throw new Exception('Unable to find controller - ' . $classPath);
+            throw new Core_Exception_Fatal('Unable to find controller - ' . $classPath);
         }
 
         $controllerObj = new $className();
@@ -147,7 +157,7 @@ class Core_App {
 
         // 方法不存在
         if (! method_exists($controllerObj, $actionMethod)) {
-            throw new Exception('Unable to find action - ' . $className . '::' . $actionMethod, 404);
+            throw new Core_Exception_Fatal('Unable to find action - ' . $className . '::' . $actionMethod, 404);
         }
 
         $result = call_user_func(array($controllerObj, $actionMethod));
@@ -159,7 +169,7 @@ class Core_App {
                 $tplFilePath = template($tpl);
 
                 if (! is_file($tplFilePath)) {
-                    throw new Exception('Unable to find template - ' . $tplFilePath);
+                    throw new Core_Exception_Fatal('Unable to find template - ' . $tplFilePath);
                 }
 
                Core_View::getInstance()->display($tpl);

@@ -121,9 +121,10 @@ class Com_db_Pdo
 
             $db->dsn = $conf;
 
-        } catch (Exception $e) {
-            exit($e->getMessage());
-        }
+            } catch (PDOException $e) {
+                exit('Connection failed: ' . $e->getMessage());
+                return false;
+            }
 
         return $db;
     }
@@ -187,7 +188,7 @@ class Com_db_Pdo
             return $stmt;
 
         } catch (Exception $e) {
-            exit(Com_db::getRealSql($sql, $params));
+            exit($e->getMessage() . Com_db::getRealSql($sql, $params));
             return false;
         }
     }
