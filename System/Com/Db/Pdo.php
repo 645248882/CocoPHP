@@ -122,7 +122,7 @@ class Com_Db_Pdo
             $db->dsn = $conf;
 
             } catch (PDOException $e) {
-                exit('Connection failed: ' . $e->getMessage());
+                Com_DB_Exception::process($e, '[Connection Failed] ' . $dsn);
                 return false;
             }
 
@@ -188,7 +188,7 @@ class Com_Db_Pdo
             return $stmt;
 
         } catch (Exception $e) {
-            exit($e->getMessage() . Com_db::getRealSql($sql, $params));
+            Com_DB_Exception::process($e, '[SQL Failed]', $this->_formatLogSql($sql, $params));
             return false;
         }
     }
