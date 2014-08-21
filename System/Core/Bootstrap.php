@@ -19,6 +19,10 @@ class Core_Bootstrap {
             define('DS', DIRECTORY_SEPARATOR);
         }
 
+        define('DATA_PATH',     APP_PATH  . 'Data'     . DS);
+        define('LOG_PATH',      DATA_PATH . 'Logs'     . DS);
+        define('CACHE_PATH',    DATA_PATH . 'Cache'    . DS);
+
         // 引入系统配置文件
         require SYS_PATH . 'Core/Config.php';
         // 加载全局变量
