@@ -9,5 +9,14 @@ define('DEBUG_EXPLAIN_SQL', true);
 // 模板文件扩展名
 define('TPL_EXT', '.phtml');
 
+// 数据存放目录
+define('DATA_PATH',     APP_PATH  . 'Data'     . DS);
+
+// 日志目录
+define('LOG_PATH',      DATA_PATH . 'Logs'     . DS);
+
+// 文件缓存目录
+define('CACHE_PATH',    DATA_PATH . 'Cache'    . DS);
+
 // 当前时区
 define('CUR_TIMEZONE', 'Asia/Shanghai');

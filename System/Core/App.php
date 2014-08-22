@@ -3,7 +3,7 @@ class Core_App {
     protected static $_instance;
 
     /**
-     * 命令命令
+     * 命令模式
      */ 
     protected $_isCli = false;
 
@@ -18,11 +18,19 @@ class Core_App {
 
     protected function __construct()
     {
-        // Framework init
-        require SYS_PATH . 'Core/Bootstrap.php';
+        if (! defined('DS')) {
+            define('DS', DIRECTORY_SEPARATOR);
+        }
+
+        require SYS_PATH . 'Core' . DS . 'Bootstrap.php';
+  
+        // 框架初始化
         Core_Bootstrap::init();
 
-        // include 检索目录设置
+        // 加载核心函数
+        require SYS_PATH . 'Core' . DS . 'Function.php';
+
+        // 设置文件检索目录
         set_include_path(
             '.' .
             PATH_SEPARATOR . APP_PATH .
@@ -30,7 +38,7 @@ class Core_App {
             PATH_SEPARATOR . SYS_PATH
         );
 
-        // Autoload class
+        // 类的自动加载
         spl_autoload_register(array($this, 'autoload'));
     }
 
@@ -50,7 +58,7 @@ class Core_App {
             $classPath = str_replace('_', DIRECTORY_SEPARATOR, $className);
         }
 
-        require_once $classPath . '.php';
+        require $classPath . '.php';
 
         // 包含文件之后，在检测类是否存在
         if (! class_exists($className, false) && ! interface_exists($className, false)) {
