@@ -122,7 +122,7 @@ class Com_Db_Pdo
             $db->dsn = $conf;
 
             } catch (PDOException $e) {
-                Com_DB_Exception::process($e, '[Connection Failed] ' . $dsn);
+                Com_Db_Exception::process($e, '[Connection Failed] ' . $dsn);
                 return false;
             }
 
@@ -157,7 +157,7 @@ class Com_Db_Pdo
             // 调试模式打印SQL信息
             $explain = array();
 
-            if (Com_db::enableLogging() && DEBUG_EXPLAIN_SQL) {
+            if (Com_Db::enableLogging() && DEBUG_EXPLAIN_SQL) {
                 $explain = $this->_explain($sql, $params);
             }
             
@@ -181,14 +181,14 @@ class Com_Db_Pdo
             $sqlCostTime = microtime(true) - $sqlStartTime;
 
             // 调试模式打印SQL信息
-            if (Com_db::enableLogging()) {
-                Com_db::sqlLog($this->_formatLogSql($sql, $params), $sqlCostTime, $explain);
+            if (Com_Db::enableLogging()) {
+                Com_Db::sqlLog($this->_formatLogSql($sql, $params), $sqlCostTime, $explain);
             }
 
             return $stmt;
 
         } catch (Exception $e) {
-            Com_DB_Exception::process($e, '[SQL Failed]', $this->_formatLogSql($sql, $params));
+            Com_Db_Exception::process($e, '[SQL Failed]', $this->_formatLogSql($sql, $params));
             return false;
         }
     }
@@ -206,7 +206,7 @@ class Com_Db_Pdo
             return array();
         }
 
-        $sql = Com_db::getRealSql($sql, $params);
+        $sql = Com_Db::getRealSql($sql, $params);
 
         $explain = array();
         $stmt = $this->_db->query("EXPLAIN " . $sql);
@@ -231,7 +231,7 @@ class Com_Db_Pdo
         return array(
             'sql'     => $sql,
             'params'  => $params,
-            'realSql' => Com_db::getRealSql($sql, $params),
+            'realSql' => Com_Db::getRealSql($sql, $params),
             'host'    => isset($this->_db->dsn['host']) ? $this->_db->dsn['host'] : '',
             'dbName'  => isset($this->_db->dsn['path']) ? $this->_db->dsn['path'] : '',
         );
