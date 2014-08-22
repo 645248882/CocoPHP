@@ -23,12 +23,21 @@ class Core_App {
         }
 
         require SYS_PATH . 'Core' . DS . 'Bootstrap.php';
-  
-        // 框架初始化
-        Core_Bootstrap::init();
+
+        // 加载配置助手类
+        require SYS_PATH . 'Core' . DS . 'Config.php';
 
         // 加载核心函数
         require SYS_PATH . 'Core' . DS . 'Function.php';
+
+        // 加载类加载助手类
+        require  SYS_PATH . 'Core' . DS . 'Loader.php';
+
+        // 加载全局变量
+        Core_Config::load("Global");
+
+        // 框架初始化
+        Core_Bootstrap::init();
 
         // 设置文件检索目录
         set_include_path(

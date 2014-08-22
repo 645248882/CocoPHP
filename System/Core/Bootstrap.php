@@ -15,9 +15,6 @@ class Core_Bootstrap {
 
     public function initGlobal()
     {
-        // 加载全局变量
-        Core_Config::load("Global");
-
         // 设置时区
         date_default_timezone_set(CUR_TIMEZONE);
 
