@@ -9,9 +9,6 @@ define('DEBUG_EXPLAIN_SQL', true);
 // 模板文件扩展名
 define('TPL_EXT', '.phtml');
 
-// 配置文件目录
-define('CONF_PATH',  APP_PATH  . 'Conf' . DS);
-
 // 数据存放目录
 define('DATA_PATH',  APP_PATH  . 'Data' . DS);
 

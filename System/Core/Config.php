@@ -7,7 +7,7 @@ class Core_Config {
     public static function load($fileName)
     {
         if (! isset(self::$data[$fileName])) {
-            self::$data[$fileName] = include CONF_PATH . ucfirst($fileName) . '.conf.php';
+            self::$data[$fileName] = include APP_PATH . 'Conf' . DS . ucfirst($fileName) . '.conf.php';
         }
 
         return self::$data[$fileName];
